@@ -4,7 +4,6 @@ import './app.scss'
 
 const App = () => {
 
-
   const [engine, setEngine] = useState(null);
   const [initStatus, setInitStatus] = useState("Initializing...");
   const [modelLoaded, setModelLoaded] = useState(false);
@@ -13,7 +12,7 @@ const App = () => {
   const dlog = (...args) => { if (DEBUG) console.log('[WEBLLM]', ...args); };
 
   useEffect(() => {
-    const selectedModel = "Llama-3.1-8B-Instruct-q4f32_1-MLC"; // change if unsupported
+    const selectedModel = "Llama-3.1-8B-Instruct-q4f32_1-MLC"; 
     let disposed = false;
     (async () => {
       try {
