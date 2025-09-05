@@ -3,13 +3,27 @@ import * as webllm from "@mlc-ai/web-llm"
 import './app.scss'
 
 const App = () => {
-
   const [engine, setEngine] = useState(null);
-  const [initStatus, setInitStatus] = useState("Initializing...");
+  const [initStatus, setInitStatus] = useState("Initializing model...");
   const [modelLoaded, setModelLoaded] = useState(false);
+  const [modelProgress, setModelProgress] = useState(0);
+  const [messages, setMessages] = useState([
+    { role: 'system', content: 'You are a helpful AI assistant.' }
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  
   const abortRef = useRef(null);
+  const messagesEndRef = useRef(null);
   const DEBUG = true;
   const dlog = (...args) => { if (DEBUG) console.log('[WEBLLM]', ...args); };
+
+  // Scroll to bottom of messages when new content is added
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   useEffect(() => {
     const selectedModel = "Llama-3.1-8B-Instruct-q4f32_1-MLC"; 
@@ -20,7 +34,11 @@ const App = () => {
         const eng = await webllm.CreateMLCEngine(selectedModel, {
           initProgressCallback: (report) => {
             if (disposed) return;
-            setInitStatus(report.text || 'Loading...');
+            const progressText = report.text || 'Loading model...';
+            setInitStatus(progressText);
+            if (report.progress !== undefined) {
+              setModelProgress(Math.round(report.progress * 100));
+            }
             if (report.progress === 1) {
               setModelLoaded(true);
             }
@@ -47,14 +65,6 @@ const App = () => {
     })();
     return () => { disposed = true; if (abortRef.current) abortRef.current.abort(); };
   },[]);
-
-
-  const [messages, setMessages]= useState([
-    { role: 'system', content: 'You are a helpful AI assistant.' }
-  ]);
-
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
 
   // Send user message to LLM and update chat
   const handleSend = async () => {
@@ -123,44 +133,69 @@ const App = () => {
 
   return (
     <main>
-      <section>
-        <div className="conversation-area">
-          <div className="messages">
-            {
-              messages.filter(m => m.role !== 'system').map((msg, index) => (
-                <div key={index} className={`message ${msg.role === 'assistant' ? 'model' : msg.role}`}>
-                  {msg.content}
-                </div>
-              ))
-            }
-            {loading && (
-              <div className="message model">Typing...</div>
-            )}
+      <div className="conversation-area">
+        <div className="header">
+          <h1>WebLLM Chat</h1>
+          <div className="model-info">
+            <span className={`status-dot ${!modelLoaded ? 'loading' : ''}`}></span>
+            {modelLoaded ? 'Llama 3.1 8B (Ready)' : 'Loading model...'}
           </div>
-          <div className="input-area">
+        </div>
+        
+        <div className="messages">
+          {messages.filter(m => m.role !== 'system').map((msg, index) => (
+            <div key={index} className={`message ${msg.role === 'assistant' ? 'model' : msg.role}`}>
+              {msg.content}
+            </div>
+          ))}
+          {loading && (
+            <div className="message model typing">Typing</div>
+          )}
+          <div ref={messagesEndRef} /> {/* Empty div for auto-scrolling */}
+        </div>
+        
+        <div className="input-area">
+          <div className="input-wrapper">
             <input
               type="text"
-              placeholder="Message LLm"
+              placeholder="Message LLama..."
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleInputKeyDown}
-              disabled={!engine || loading}
+              disabled={!modelLoaded || loading}
             />
-            {!loading && (
-              <button onClick={handleSend} disabled={!engine || !input.trim()}>
-                Send
-              </button>)}
-            {loading && (
-              <button onClick={handleCancel} className="cancel-btn">Stop</button>
-            )}
           </div>
-          {!modelLoaded && (
-            <div style={{position:'absolute', top:10, left:'50%', transform:'translateX(-50%)', fontSize:'0.8rem', opacity:0.8}}>
-              {initStatus}
-            </div>
+          
+          {!loading ? (
+            <button 
+              className="send-btn"
+              onClick={handleSend} 
+              disabled={!modelLoaded || !input.trim()}
+            >
+              Send
+            </button>
+          ) : (
+            <button 
+              onClick={handleCancel} 
+              className="cancel-btn"
+            >
+              Stop
+            </button>
           )}
         </div>
-      </section>
+        
+        {!modelLoaded && (
+          <div className="loading-overlay">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">
+              {initStatus}
+              {modelProgress > 0 && modelProgress < 100 && (
+                <span> ({modelProgress}%)</span>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </main>
   );
 }
