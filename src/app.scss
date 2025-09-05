@@ -1,0 +1,102 @@
+main{
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1e1e1e;
+    color: white;
+
+    .conversation-area{
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 10px;
+        position: relative;
+
+        .messages{
+            height: 100%;
+            width: 70%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding-bottom: 4rem;
+        }
+
+        .message {
+            max-width: 60%;
+            padding: 0.75rem 1.2rem;
+            border-radius: 18px;
+            font-size: 1.05rem;
+            margin-bottom: 0.2rem;
+            word-break: break-word;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: background 0.2s;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #007bff 60%, #0056b3 100%);
+            color: #fff;
+            border-bottom-right-radius: 6px;
+            border-bottom-left-radius: 18px;
+            border-top-left-radius: 18px;
+            border-top-right-radius: 18px;
+        }
+
+        .message.model {
+            align-self: flex-start;
+            background: #292929;
+            color: #fff;
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 18px;
+            border-top-right-radius: 18px;
+            border-top-left-radius: 18px;
+        }
+
+        .input-area{
+            display: flex;
+            gap: 10px;
+            position: absolute;
+            width: 70%;
+            bottom: 20px;
+            height: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30,30,30,0.95);
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            padding: 0.5rem;
+
+            input{
+                flex: 1;
+                padding: 10px;
+                border-radius: 5px;
+                border: none;
+                outline: none;
+                font-size: 1rem;
+                background: #232323;
+                color: #fff;
+            }
+
+            button{
+                padding: 10px 20px;
+                border-radius: 5px;
+                border: none;
+                background-color: #007bff;
+                color: white;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 1rem;
+                transition: background 0.2s;
+
+                &:hover{
+                    background-color: #0056b3;
+                }
+            }
+        }
+    }
+}
